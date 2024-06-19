@@ -1,0 +1,81 @@
+import heapq
+
+class PuzzleState:
+    def __init__(self, board, goal, moves=0, previous=None):
+        self.board = board
+        self.goal = goal
+        self.moves = moves
+        self.previous = previous
+        self.blank_pos = self.board.index(0)
+        self.manhattan_distance = self.calculate_manhattan_distance()
+
+    def calculate_manhattan_distance(self):
+        distance = 0
+        for i in range(1, 9):
+            current_pos = self.board.index(i)
+            goal_pos = self.goal.index(i)
+            current_x, current_y = divmod(current_pos, 3)
+            goal_x, goal_y = divmod(goal_pos, 3)
+            distance += abs(current_x - goal_x) + abs(current_y - goal_y)
+        return distance
+
+    def get_neighbors(self):
+        neighbors = []
+        x, y = divmod(self.blank_pos, 3)
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        for dx, dy in directions:
+            new_x, new_y = x + dx, y + dy
+            if 0 <= new_x < 3 and 0 <= new_y < 3:
+                new_blank_pos = new_x * 3 + new_y
+                new_board = self.board[:]
+                new_board[self.blank_pos], new_board[new_blank_pos] = new_board[new_blank_pos], new_board[self.blank_pos]
+                neighbors.append(PuzzleState(new_board, self.goal, self.moves + 1, self))
+        return neighbors
+
+    def __lt__(self, other):
+        return (self.moves + self.manhattan_distance) < (other.moves + other.manhattan_distance)
+
+def a_star_search(start, goal):
+    open_set = []
+    heapq.heappush(open_set, (0, start))
+    closed_set = set()
+
+    while open_set:
+        _, current = heapq.heappop(open_set)
+
+        if current.board == goal:
+            return current
+
+        closed_set.add(tuple(current.board))
+
+        for neighbor in current.get_neighbors():
+            if tuple(neighbor.board) in closed_set:
+                continue
+            heapq.heappush(open_set, (neighbor.moves + neighbor.manhattan_distance, neighbor))
+
+    return None
+
+def reconstruct_path(state):
+    path = []
+    while state:
+        path.append(state.board)
+        state = state.previous
+    return path[::-1]
+
+# Example usage
+start_board = [1, 2, 3, 4, 0, 5, 6, 7, 8]
+goal_board = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+
+start_state = PuzzleState(start_board, goal_board)
+goal_state = a_star_search(start_state, goal_board)
+
+if goal_state:
+    path = reconstruct_path(goal_state)
+    print(f"Total moves (cost): {goal_state.moves}")
+    for step in path:
+        print(step[:3])
+        print(step[3:6])
+        print(step[6:])
+        print()
+else:
+    print("No solution found.")
