@@ -1,0 +1,51 @@
+import random
+
+class VacuumCleaner:
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self.grid = [[0] * cols for _ in range(rows)]  # Initialize grid with all cells clean
+        self.position = (random.randint(0, rows-1), random.randint(0, cols-1))  # Random initial position
+        self.cleaned_cells = 0
+
+    def print_grid(self):
+        for row in self.grid:
+            print(row)
+
+    def move(self):
+        # Move randomly
+        direction = random.choice(['up', 'down', 'left', 'right'])
+        if direction == 'up' and self.position[0] > 0:
+            self.position = (self.position[0] - 1, self.position[1])
+        elif direction == 'down' and self.position[0] < self.rows - 1:
+            self.position = (self.position[0] + 1, self.position[1])
+        elif direction == 'left' and self.position[1] > 0:
+            self.position = (self.position[0], self.position[1] - 1)
+        elif direction == 'right' and self.position[1] < self.cols - 1:
+            self.position = (self.position[0], self.position[1] + 1)
+
+    def clean(self):
+        if self.grid[self.position[0]][self.position[1]] == 1:
+            self.grid[self.position[0]][self.position[1]] = 0
+            self.cleaned_cells += 1
+
+    def is_dirty(self):
+        return any(1 in row for row in self.grid)
+
+    def run(self):
+        while self.is_dirty():
+            print("Current position:", self.position)
+            self.clean()
+            self.move()
+            self.print_grid()
+            print("Cleaned cells:", self.cleaned_cells)
+            print("---------")
+
+# Example usage:
+rows = 5
+cols = 5
+vacuum = VacuumCleaner(rows, cols)
+# Make some cells dirty
+vacuum.grid[random.randint(0, rows-1)][random.randint(0, cols-1)] = 1
+vacuum.grid[random.randint(0, rows-1)][random.randint(0, cols-1)] = 1
+vacuum.run()
